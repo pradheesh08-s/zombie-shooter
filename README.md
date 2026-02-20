@@ -1,5 +1,9 @@
 # Neon Zombie Survival
 
+# Neon Zombie Survival
+![Game Screenshot](./screenshot.png)
+<p align="center"><i>Main menu and HUD of Neon Zombie Survival</i></p>
+
 Professional neon-themed 2D zombie survival shooter with advanced enemy variants, multi-weapon combat, wave progression, power-ups, boss waves, and local leaderboard persistence.
 
 ## Controls
