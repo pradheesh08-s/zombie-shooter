@@ -27,6 +27,9 @@ const ui = {
   restartBtn: document.getElementById("restart-btn"),
   retryBtn: document.getElementById("retry-btn"),
   musicBtn: document.getElementById("music-btn"),
+  musicToggleBtn: document.getElementById("music-toggle-btn"),
+  themeBtn: document.getElementById("theme-btn"),
+  sidebarToggleBtn: document.getElementById("sidebar-toggle-btn"),
   modeButtons: Array.from(document.querySelectorAll(".mode-btn")),
   difficultyButtons: Array.from(document.querySelectorAll(".difficulty-btn")),
   weaponButtons: Array.from(document.querySelectorAll(".weapon-btn")),
@@ -55,6 +58,11 @@ const world = { width: canvas.width, height: canvas.height };
 
 const CONTROL_KEY = "neonZombie.controls";
 const SCORE_KEY = "neonZombie.highscores";
+const MUSIC_ENABLED_KEY = "neonZombie.musicEnabled";
+const THEME_KEY = "neonZombie.theme";
+const SIDEBAR_KEY = "neonZombie.sidebarOpen";
+
+const themes = ["blue", "purple", "red"];
 
 const defaultControls = {
   moveUp: "w",
@@ -274,12 +282,18 @@ const bloodDecals = [];
 const explosions = [];
 
 let controls = loadControls();
+let musicUnlocked = false;
+let musicEnabled = loadMusicEnabled();
+let currentTheme = loadTheme();
+let sidebarOpen = loadSidebarOpen();
 
 setup();
 
 function setup() {
   initializeAmmo();
   bindEvents();
+  applyTheme(currentTheme);
+  applySidebarState();
   setMode(state.mode);
   setDifficulty(state.difficulty);
   refreshKeybindUI();
@@ -290,6 +304,20 @@ function setup() {
 }
 
 function bindEvents() {
+  const unlockEvents = ["pointerdown", "keydown", "touchstart"];
+  const tryUnlockMusic = () => {
+    playBackgroundMusic();
+    if (musicUnlocked) {
+      unlockEvents.forEach(eventName => {
+        window.removeEventListener(eventName, tryUnlockMusic);
+      });
+    }
+  };
+
+  unlockEvents.forEach(eventName => {
+    window.addEventListener(eventName, tryUnlockMusic, { passive: true });
+  });
+
   document.addEventListener("keydown", event => {
     const key = normalizeKey(event.key);
 
@@ -393,6 +421,18 @@ function bindEvents() {
   ui.musicBtn.addEventListener("click", () => {
     cycleMusicTrack();
   });
+
+  ui.musicToggleBtn.addEventListener("click", () => {
+    toggleMusicEnabled();
+  });
+
+  ui.themeBtn.addEventListener("click", () => {
+    cycleTheme();
+  });
+
+  ui.sidebarToggleBtn.addEventListener("click", () => {
+    toggleSidebar();
+  });
 }
 
 function initializeAmmo() {
@@ -436,6 +476,89 @@ function loadControls() {
 
 function saveControls() {
   localStorage.setItem(CONTROL_KEY, JSON.stringify(controls));
+}
+
+function loadTheme() {
+  try {
+    const raw = localStorage.getItem(THEME_KEY);
+    return themes.includes(raw) ? raw : "blue";
+  } catch {
+    return "blue";
+  }
+}
+
+function saveTheme() {
+  localStorage.setItem(THEME_KEY, currentTheme);
+}
+
+function loadSidebarOpen() {
+  try {
+    const raw = localStorage.getItem(SIDEBAR_KEY);
+    return raw === null ? true : raw === "true";
+  } catch {
+    return true;
+  }
+}
+
+function saveSidebarOpen() {
+  localStorage.setItem(SIDEBAR_KEY, String(sidebarOpen));
+}
+
+function applySidebarState() {
+  document.body.classList.toggle("sidebar-collapsed", !sidebarOpen);
+  updateSidebarButton();
+}
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  saveSidebarOpen();
+  applySidebarState();
+  playSfx(audio.ui, 0.22, 1.06);
+}
+
+function applyTheme(themeName) {
+  currentTheme = themes.includes(themeName) ? themeName : "blue";
+  if (currentTheme === "blue") {
+    document.body.removeAttribute("data-theme");
+  } else {
+    document.body.setAttribute("data-theme", currentTheme);
+  }
+  updateThemeButton();
+}
+
+function cycleTheme() {
+  const index = themes.indexOf(currentTheme);
+  const next = themes[(index + 1) % themes.length];
+  applyTheme(next);
+  saveTheme();
+  playSfx(audio.ui, 0.22, 1.1);
+}
+
+function loadMusicEnabled() {
+  try {
+    const raw = localStorage.getItem(MUSIC_ENABLED_KEY);
+    return raw === null ? true : raw === "true";
+  } catch {
+    return true;
+  }
+}
+
+function saveMusicEnabled() {
+  localStorage.setItem(MUSIC_ENABLED_KEY, String(musicEnabled));
+}
+
+function toggleMusicEnabled() {
+  musicEnabled = !musicEnabled;
+  saveMusicEnabled();
+
+  if (!musicEnabled) {
+    audio.music.pause();
+    audio.music.currentTime = 0;
+  } else {
+    playBackgroundMusic();
+  }
+
+  updateMusicButton();
 }
 
 function refreshKeybindUI() {
@@ -513,9 +636,7 @@ function startGame() {
   ui.startOverlay.classList.add("hidden");
   ui.pauseOverlay.classList.add("hidden");
   ui.gameOverOverlay.classList.add("hidden");
-  audio.music.volume = 0.2;
-  ensureMusicTrack();
-  audio.music.play().catch(() => {});
+  playBackgroundMusic();
 }
 
 function restartGame() {
@@ -595,6 +716,7 @@ function openPause() {
 function closePause() {
   state.paused = false;
   ui.pauseOverlay.classList.add("hidden");
+  playBackgroundMusic();
 }
 
 function loop(now) {
@@ -1395,26 +1517,70 @@ function ensureMusicTrack() {
     audio.music.src = track.src;
     audio.music.load();
   }
+  audio.music.loop = true;
   updateMusicButton();
+}
+
+function playBackgroundMusic() {
+  if (!musicEnabled) {
+    updateMusicButton();
+    return;
+  }
+
+  ensureMusicTrack();
+  audio.music.muted = false;
+  audio.music.volume = 0.2;
+
+  const playPromise = audio.music.play();
+  if (playPromise && typeof playPromise.then === "function") {
+    playPromise
+      .then(() => {
+        musicUnlocked = true;
+        updateMusicButton();
+      })
+      .catch(() => {
+        updateMusicButton();
+      });
+  } else {
+    musicUnlocked = !audio.music.paused;
+    updateMusicButton();
+  }
 }
 
 function cycleMusicTrack() {
   state.musicIndex = (state.musicIndex + 1) % musicTracks.length;
-  const shouldPlay = state.started && !state.paused && !state.gameOver;
   audio.music.src = musicTracks[state.musicIndex].src;
   audio.music.load();
-  if (shouldPlay) {
-    audio.music.volume = 0.2;
-    audio.music.play().catch(() => {});
-  }
+  playBackgroundMusic();
   updateMusicButton();
   playSfx(audio.ui, 0.25, 1.15);
 }
 
 function updateMusicButton() {
-  if (!ui.musicBtn) return;
+  if (!ui.musicBtn || !ui.musicToggleBtn) return;
   const track = musicTracks[state.musicIndex] || musicTracks[0];
   const trackNumber = state.musicIndex + 1;
-  ui.musicBtn.title = `Change music (${trackNumber}/${musicTracks.length}): ${track.name}`;
-  ui.musicBtn.setAttribute("aria-label", `Change music track ${trackNumber}: ${track.name}`);
+  const status = !musicEnabled ? "off" : (musicUnlocked || !audio.music.paused ? "playing" : "tap to start");
+  ui.musicBtn.title = `Music ${status} • ${trackNumber}/${musicTracks.length}: ${track.name}`;
+  ui.musicBtn.setAttribute("aria-label", `Music ${status}, change track ${trackNumber}: ${track.name}`);
+
+  ui.musicToggleBtn.textContent = musicEnabled ? "ON" : "OFF";
+  ui.musicToggleBtn.classList.toggle("off", !musicEnabled);
+  ui.musicToggleBtn.title = musicEnabled ? "Turn music off" : "Turn music on";
+  ui.musicToggleBtn.setAttribute("aria-label", musicEnabled ? "Turn music off" : "Turn music on");
+}
+
+function updateThemeButton() {
+  if (!ui.themeBtn) return;
+  const label = currentTheme.toUpperCase();
+  ui.themeBtn.textContent = label;
+  ui.themeBtn.title = `Change color theme (current ${label})`;
+  ui.themeBtn.setAttribute("aria-label", `Change color theme, current ${label}`);
+}
+
+function updateSidebarButton() {
+  if (!ui.sidebarToggleBtn) return;
+  ui.sidebarToggleBtn.textContent = sidebarOpen ? "HIDE" : "OPEN";
+  ui.sidebarToggleBtn.title = sidebarOpen ? "Hide sidebar" : "Open sidebar";
+  ui.sidebarToggleBtn.setAttribute("aria-label", sidebarOpen ? "Hide sidebar" : "Open sidebar");
 }
