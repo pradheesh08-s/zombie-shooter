@@ -43,9 +43,9 @@ body {
   position: relative;
   padding: 10px 14px;
   display: grid;
-  grid-template-columns: 1.2fr 1fr 0.8fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  align-items: center;
+  align-items: stretch;
   overflow: hidden;
   background:
     linear-gradient(135deg, #ffffff09 0%, transparent 42%),
@@ -63,15 +63,11 @@ body {
 }
 
 .hud-top::after {
-  content: "";
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  right: -65px;
-  top: -140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #67d6ff25 0%, #67d6ff00 65%);
-  pointer-events: none;
+  content: none;
+}
+
+.hud-top > * {
+  min-height: 74px;
 }
 
 .hud-label {
@@ -111,13 +107,16 @@ body {
   border: 1px solid #3a5b84;
   border-radius: 12px;
   background: linear-gradient(180deg, #112036b0 0%, #0f1b2fb0 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .score {
   font-size: 2rem;
   font-weight: 800;
   color: #f6fbff;
-  text-shadow: 0 0 16px #57b9ff55;
+  text-shadow: 0 0 8px #57b9ff33;
   letter-spacing: 0.03em;
 }
 
@@ -139,8 +138,10 @@ body {
 .hud-right {
   display: grid;
   gap: 6px;
-  justify-content: end;
+  justify-content: stretch;
   text-align: right;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
 }
 
 .hud-right > div {
@@ -148,6 +149,7 @@ body {
   border: 1px solid #39567f;
   border-radius: 10px;
   background: linear-gradient(180deg, #13243db0 0%, #102138a8 100%);
+  text-align: left;
 }
 
 #weapon-name,
@@ -157,7 +159,7 @@ body {
 }
 
 .music-btn {
-  justify-self: end;
+  justify-self: stretch;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -174,7 +176,7 @@ body {
 }
 
 .music-toggle-btn {
-  justify-self: end;
+  justify-self: stretch;
   width: 50px;
   height: 28px;
   border-radius: 999px;
@@ -193,7 +195,7 @@ body {
 }
 
 .theme-btn {
-  justify-self: end;
+  justify-self: stretch;
   width: 74px;
   height: 28px;
   border-radius: 999px;
@@ -212,7 +214,7 @@ body {
 }
 
 .sidebar-toggle-btn {
-  justify-self: end;
+  justify-self: stretch;
   width: 74px;
   height: 28px;
   border-radius: 999px;
@@ -485,9 +487,28 @@ body.sidebar-collapsed .side-panel {
     gap: 10px;
   }
 
+  .hud-top > * {
+    min-height: 72px;
+  }
+
+  .hud-block,
+  .hud-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .hud-right {
-    justify-content: start;
+    justify-content: stretch;
     text-align: left;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .hud-right > div {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -513,6 +534,14 @@ body.sidebar-collapsed .side-panel {
 @media (max-width: 700px) {
   .app-shell {
     padding: 8px;
+  }
+
+  .hud-top > * {
+    min-height: 68px;
+  }
+
+  .hud-right {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .score {
