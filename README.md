@@ -1,8 +1,7 @@
 # Neon Zombie Survival
 
-# Neon Zombie Survival
-![Game Screenshot](./screenshot.png)
-<p align="center"><i>Main menu and HUD of Neon Zombie Survival</i></p>
+<img width="935" height="457" alt="Screenshot 2026-02-20 203704" src="https://github.com/user-attachments/assets/31755a2b-3a3f-407b-95de-1fa7dbc58feb" />
+
 
 Professional neon-themed 2D zombie survival shooter with advanced enemy variants, multi-weapon combat, wave progression, power-ups, boss waves, and local leaderboard persistence.
 
