@@ -1,9 +1,6 @@
 
 # Zombie Shooter
-![Uploading Screenshot 2026-02-20 211340.png…]()
-![Uploading Screenshot 2026-02-20 211340.png…]()
-![Uploading Screenshot 2026-02-20 211340.png…]()
-![Uploading Screenshot 2026-02-20 211340.png…]()
+<img width="1881" height="1061" alt="image" src="https://github.com/user-attachments/assets/45aec56c-721b-47e5-837d-481c764318a0" />
 
 ## Description
 Zombie Shooter is a fast-paced browser game where you defend yourself against waves of zombies. Use your mouse to aim and shoot, survive as long as possible, and try to beat your high score!
