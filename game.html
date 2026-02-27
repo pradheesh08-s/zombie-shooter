@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Zombie Survival</title>
+  <link rel="stylesheet" href="game.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hud-top glass">
+      <div class="hud-block">
+        <span class="hud-label">Health</span>
+        <div class="health-track"><div id="health-bar" class="health-fill"></div></div>
+      </div>
+      <div class="hud-center">
+        <div class="score" id="score">0</div>
+        <div class="subline">
+          <span id="wave">Wave 1</span>
+          <span id="mode-label">Survival</span>
+          <span id="combo">Combo x1</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div><span class="hud-label">Weapon</span><span id="weapon-name">Pistol</span></div>
+        <div><span class="hud-label">Ammo</span><span id="ammo">50 / 50</span></div>
+        <button id="music-btn" class="music-btn" title="Change music track" aria-label="Change music track">♫</button>
+        <button id="music-toggle-btn" class="music-toggle-btn" title="Music ON/OFF" aria-label="Toggle music">ON</button>
+        <button id="theme-btn" class="theme-btn" title="Change color theme" aria-label="Change color theme">BLUE</button>
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Hide sidebar" aria-label="Hide sidebar">HIDE</button>
+      </div>
+    </header>
+
+    <section class="main-layout">
+      <section class="canvas-panel glass">
+        <canvas id="game" width="1200" height="700"></canvas>
+
+        <div id="start-overlay" class="overlay">
+          <h1>Neon Zombie Survival</h1>
+          <p>Fight endless infected waves with tactical weapons and upgrades.</p>
+
+          <div class="pick-row">
+            <span>Mode:</span>
+            <button class="mode-btn active" data-mode="survival">Survival</button>
+            <button class="mode-btn" data-mode="timeAttack">Time Attack</button>
+            <button class="mode-btn" data-mode="hardcore">Hardcore</button>
+          </div>
+
+          <div class="pick-row">
+            <span>Difficulty:</span>
+            <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+            <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+            <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+          </div>
+
+          <div class="pick-row">
+            <label for="outfit-color">Outfit Color:</label>
+            <input id="outfit-color" type="color" value="#4ed0ff" />
+          </div>
+
+          <button id="start-btn" class="primary">Start Mission</button>
+        </div>
+
+        <div id="pause-overlay" class="overlay hidden">
+          <h2>Paused</h2>
+          <p>Stay sharp. The horde is waiting.</p>
+          <div class="overlay-actions">
+            <button id="resume-btn" class="primary">Resume</button>
+            <button id="restart-btn" class="secondary">Restart</button>
+          </div>
+        </div>
+
+        <div id="gameover-overlay" class="overlay hidden">
+          <h2 id="gameover-title">Mission Failed</h2>
+          <p id="gameover-text">Final Score: 0</p>
+          <button id="retry-btn" class="primary">Retry</button>
+        </div>
+
+        <div id="hit-marker" class="hit-marker hidden">✦</div>
+        <div id="low-health-vignette" class="low-health"></div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel glass">
+          <h3>Weapons</h3>
+          <div class="weapon-list">
+            <button class="weapon-btn active" data-weapon="pistol">1 · Pistol</button>
+            <button class="weapon-btn" data-weapon="shotgun">2 · Shotgun</button>
+            <button class="weapon-btn" data-weapon="rifle">3 · Assault Rifle</button>
+            <button class="weapon-btn" data-weapon="sniper">4 · Sniper</button>
+          </div>
+          <button id="upgrade-btn" class="secondary">Upgrade Weapon (500)</button>
+          <p id="upgrade-level">Upgrade Level: 0</p>
+        </section>
+
+        <section class="panel glass">
+          <h3>Power-Ups</h3>
+          <div id="powerup-status" class="power-list">No active buffs</div>
+        </section>
+
+        <section class="panel glass">
+          <h3>Leaderboard</h3>
+          <ol id="leaderboard" class="leaderboard"></ol>
+        </section>
+
+        <section class="panel glass">
+          <h3>Controls</h3>
+          <div class="controls-grid" id="controls-grid">
+            <button class="bind-btn" data-action="moveUp">Move Up <span id="bind-moveUp">W</span></button>
+            <button class="bind-btn" data-action="moveLeft">Move Left <span id="bind-moveLeft">A</span></button>
+            <button class="bind-btn" data-action="moveDown">Move Down <span id="bind-moveDown">S</span></button>
+            <button class="bind-btn" data-action="moveRight">Move Right <span id="bind-moveRight">D</span></button>
+            <button class="bind-btn" data-action="reload">Reload <span id="bind-reload">R</span></button>
+            <button class="bind-btn" data-action="dodge">Dodge <span id="bind-dodge">Space</span></button>
+            <button class="bind-btn" data-action="pause">Pause <span id="bind-pause">Esc</span></button>
+          </div>
+          <p id="bind-hint">Click action then press new key.</p>
+          <button id="reset-controls" class="secondary">Reset Controls</button>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="hud-bottom glass">
+      <span>WASD Move · Mouse Aim · Left Click Shoot · Space Dodge · R Reload · Esc Pause</span>
+      <span id="timer-label">Time: ∞</span>
+    </footer>
+  </main>
+
+  <audio id="music-audio" src="https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3" preload="auto" loop></audio>
+  <audio id="shoot-audio" src="https://cdn.pixabay.com/audio/2022/03/15/audio_80c8638be4.mp3" preload="auto"></audio>
+  <audio id="reload-audio" src="https://cdn.pixabay.com/audio/2022/03/09/audio_7fbf114f66.mp3" preload="auto"></audio>
+  <audio id="hit-audio" src="https://cdn.pixabay.com/audio/2022/03/10/audio_b8e8f8f4a0.mp3" preload="auto"></audio>
+  <audio id="explosion-audio" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8d7e9cb7be.mp3" preload="auto"></audio>
+  <audio id="ui-audio" src="https://cdn.pixabay.com/audio/2021/08/04/audio_0625f1375f.mp3" preload="auto"></audio>
+
+  <script src="game.js"></script>
+</body>
+</html>
